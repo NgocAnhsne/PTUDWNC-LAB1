@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using TatBlog.Core.Entities;
 using TatBlog.Core.DTO;
 using TatBlog.Data.Contexts;
+using TatBlog.Core.Constracts;
 
 namespace TatBlog.Services.Blogs
 {
@@ -92,6 +93,21 @@ namespace TatBlog.Services.Blogs
                     PostCount = x.Posts.Count(p => p.Published)
                 })
                 .ToListAsync(cancellationToken);
+        }
+        public async Task<IPagedList<TagItem>> GetPagedTagAsync(
+            IPagingParams pagingParams,
+            CancellationToken cancellationToken = default)
+        {
+            var tagQuery = _context.Set<Tag>()
+            .Select(x => new TagItem()
+            {
+                Id = x.Id,
+                Name = x.Name,
+                UrlSlug = x.UrlSlug,
+                Description = x.Description,
+                PostCount = x.Posts.Count(p => p.Published)
+            });
+            return await tagQuery.ToPagedListAsync(pagingParams, cancellationToken);
         }
     }
 }
