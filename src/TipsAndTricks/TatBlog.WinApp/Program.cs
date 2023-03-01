@@ -1,13 +1,23 @@
 ﻿using TatBlog.Data.Contexts;
 using TatBlog.Data.Seeders;
 using TatBlog.Services.Blogs;
+using TatBlog.WinApp;
 
 var context = new BlogDbContext();
 
 IBlogRepository blogRepo = new BlogRepository(context);
 
+var papingParams = new PagingParams
+{
+    PageNumber = 1,
+    PageSize = 5,
+    SortColumn = "Name",
+    SortOrder = "DESC"
+};
+var tagsList = await blogRepo.GetPagedTagAsync(papingParams);
+
 var categories = await blogRepo.GetCategoryItemsAsync();
-Console.WriteLine("{0.-5}{1.-50}{2.10}"
+Console.WriteLine("{0,-5}{1,-50}{2,10}"
     , "ID", "Name", "Count");
 var posts = await blogRepo.GetPopularArticlesAsync(3);
 
@@ -29,10 +39,13 @@ var authors = context.Author.ToList();
 //        Category = p.Category.Name
 //    })
 //    .ToList();
-
+foreach (var item in tagsList)
+{
+    Console.WriteLine("{0,-5}{1,-50}{2,10}", item.Id, item.Name, item.PostCount);
+}
 foreach (var item in categories)
 {
-    Console.WriteLine("{0.-5}{1.-50}{2.10}", item.Id, item.Name, item.PostCount);
+    Console.WriteLine("{0,-5}{1,-50}{2,10}", item.Id, item.Name, item.PostCount);
 }
 
 foreach (var post in posts)
@@ -50,5 +63,5 @@ foreach (var post in posts)
 
 foreach (var author in authors)
 {
-    Console.WriteLine("{0.-4}{1.-30}{2.-30}{3.12:MM/dd/yyyy}", author.Id, author.FullName, author.Email, author.JoinedDate);
+    Console.WriteLine("{0,-4}{1,-30}{2,-30}{3,12:MM/dd/yyyy}", author.Id, author.FullName, author.Email, author.JoinedDate);
 }
