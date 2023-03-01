@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TatBlog.Core.Entities;
+using TatBlog.Core.DTO;
 using TatBlog.Data.Contexts;
 
 namespace TatBlog.Services.Blogs
@@ -70,6 +71,27 @@ namespace TatBlog.Services.Blogs
                 .ExecuteUpdateAsync(p => p.SetProperty(x => x.ViewCount, x => x.ViewCount + 1),
                 cancellationToken);
         }
-
+        public async Task<IList<CategoryItem>> GetCategoryItemsAsync(
+            bool showOnMenu = false,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<Category> categories = _context.Set<Category>();
+            if (showOnMenu)
+            {
+                categories = categories.Where(x => x.ShowOnMenu == showOnMenu);
+            }
+            return await categories
+                .OrderBy(x => x.Name)
+                .Select(x => new CategoryItem()
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    UrlSlug = x.UrlSlug,
+                    Description = x.Description,
+                    ShowOnMenu = showOnMenu,
+                    PostCount = x.Posts.Count(p => p.Published)
+                })
+                .ToListAsync(cancellationToken);
+        }
     }
 }
